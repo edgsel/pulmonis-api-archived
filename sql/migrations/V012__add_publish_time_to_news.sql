@@ -1,0 +1,3 @@
+ALTER TABLE "news"
+
+ADD COLUMN publish_time     TIMESTAMP   DEFAULT NULL;

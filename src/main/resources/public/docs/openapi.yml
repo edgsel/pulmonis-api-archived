@@ -1,0 +1,1990 @@
+openapi: 3.0.0
+info:
+  version: '1.0.0'
+  title: Pulmonis API
+x-tagGroups:
+  - name: Public
+    tags:
+      - Public Schooling
+      - Public News
+      - Public Article
+  - name: Doctor
+    tags:
+      - User
+      - Schooling
+      - Article
+      - News
+      - Refresh Token
+  - name: Admin
+    tags:
+      - Users management
+      - Status
+paths:
+  /public/news:
+    get:
+      tags:
+        - Public News
+      summary: Get all news for visitor
+      parameters:
+        - in: path
+          name: page
+          schema:
+            type: integer
+            default: 0
+            description: Parameter for specifing page of news to be retrieved. If not provided, page=0 will be returned. Default size of page is 16 and elements sorted by update time.
+            example: 3
+        - in: header
+          name: find-latest
+          required: false
+          schema:
+            type: boolean
+            default: "false"
+          description: Flag to find 4 latest news with provided language which are published.
+        - $ref: "#/components/parameters/lang"
+      description: Public endpoint for getting all news in a specific language without any authentication.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicationListingResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        412:
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /public/news/{newsId}:
+    get:
+      tags:
+        - Public News
+      summary: Get published news for visitor
+      parameters:
+        - $ref: "#/components/parameters/newsId"
+        - $ref: "#/components/parameters/lang"
+      description: Public endpoint for getting a news piece in a specific language without any authentication.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicationResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /public/articles:
+    get:
+      tags:
+        - Public Article
+      summary: Get all articles for visitor
+      parameters:
+        - in: path
+          name: page
+          schema:
+            type: integer
+            default: 0
+            description: Parameter for specifing page of articles to be retrieved. If not provided, page=0 will be returned. Default size of page is 16 and elements sorted by update time.
+            example: 3
+        - $ref: "#/components/parameters/lang"
+      description: Public endpoint for getting all articles in a specific language without any authentication.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicationListingResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        412:
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /public/articles/{articleId}:
+    get:
+      tags:
+        - Public Article
+      summary: Get published article for visitor
+      parameters:
+        - $ref: "#/components/parameters/articleId"
+        - $ref: "#/components/parameters/lang"
+      description: Public endpoint for getting an article in a specific language without any authentication.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicationResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /public/schoolings:
+    get:
+      tags:
+        - Public Schooling
+      summary: Get all public schoolings for visitor
+      description: Get all schoolings for visitors which are published. No authentication needed.
+      parameters:
+        - in: header
+          name: find-latest
+          required: false
+          schema:
+            type: boolean
+            default: "false"
+          description: Flag to find 2 schoolings.
+        - in: header
+          name: schooling-id
+          required: false
+          schema:
+            type: number
+            format: int 64
+            example: 24
+          description: Schooling ID. Header for excluding currently selected schooling from recommended schoolings. If provided, it will return 3 recomended schoolings.
+        - in: path
+          name: page
+          schema:
+            type: integer
+            default: 0
+            description: Parameter for specifing page of schoolings to be retrieved. If not provided, page=0 will be returned. Default size of page is 16 and elements sorted by update time.
+            example: 3
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolingListingResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /public/schooling/{schoolingId}:
+    get:
+      tags:
+        - Public Schooling
+      summary: Get schooling by id
+      parameters:
+        - in: path
+          name: schoolingId
+          required: true
+          schema:
+            type: number
+            format: int64
+            minimum: 1
+          description: The schooling ID
+      description: Get schooling for visitors which is published. No authentication needed.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolingResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /status:
+    get:
+      tags:
+        - Status
+      summary: Status
+      description: Get Status.
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dataOk"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /user/signup:
+    post:
+      tags:
+        - User
+      summary: Signup
+      description: Add a new user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Person's email which is email
+                  example: testing@ut.ee
+                password:
+                  type: string
+                  description: User's password
+                  example: testing123
+                firstName:
+                  type: string
+                  description: User's first name
+                  example: tes
+                lastName:
+                  type: string
+                  description: User's last name
+                  example: ting
+
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResponse"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /user/login:
+    post:
+      tags:
+        - User
+      summary: Log in using an email and a password.
+      description: Log in using an email and a password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: # Request body contents
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Person's email which is email
+                  example: testing@ut.ee
+                password:
+                  type: string
+                  description: User's password
+                  example: testing123
+              required:
+                - email
+                - password
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        412:
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /refresh-token:
+    post:
+      tags:
+        - Refresh Token
+      summary: Refresh JWT token
+      description: Refresh a not expired JWT token.
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /user/logout:
+    delete:
+      tags:
+        - User
+      summary: An endpoint handling the logout operation.
+      description: "When a logout was successful, system responts with a status of 200 and a corresponding response body
+      (refer to documentation below). If the user is not logged in, currently system responds with a status 401. When an
+      unexpected error occurs, system returns status 500."
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dataOk"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /user/update:
+    patch:
+      tags:
+        - User
+      summary: Update users.
+      description: Update user except for email and a password.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequest"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserUpdateResponse"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        412:
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /user/change-password:
+    put:
+      tags:
+        - User
+      summary: Change user's password
+      description: Change user's password. User ID is taken from JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordChangeRequest"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dataOk"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /user/validate-password-token:
+    get:
+      tags:
+        - User
+      summary: Validate password reset token
+      description: Validate password reset token.
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+            description: Password reset token represented as UUID.
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/isValidToken"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /user/reset-forgotten-password:
+    post:
+      tags:
+        - User
+      summary: User's password reset
+      description: User's password reset based on password reset token.
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+            description: Password reset token represented as UUID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgottenPasswordChangeRequest"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/isValidToken"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /user/reset-password:
+    post:
+      tags:
+        - User
+      summary: User's password reset request
+      description: Endpoint for sending user's password recovery mail with reset link.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetRequest"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dataOk"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /user/listing:
+    get:
+      tags:
+        - Users management
+      summary: Get list of all users
+      description: Only user with admin priveleges can view all users.
+      parameters:
+        - in: path
+          name: page
+          schema:
+            type: integer
+            default: 0
+            description: Parameter for specifing page of users to be retrieved. If not provided, page=0 will be returned. Default size of page is 16 and elements sorted by update time.
+            example: 3
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListingResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /user/update-status/{email}:
+    put:
+      tags:
+        - Users management
+      summary: Update user's status
+      description: Only user with admin priveleges can update users status
+      parameters:
+        - in: path
+          name: email
+          required: true
+          schema:
+            type: string
+          description: Person's email which is email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  description: Status of user.
+                  enum: [ active, inactive, pending ]
+                  example: active
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /schooling/create:
+    post:
+      tags:
+        - Schooling
+      summary: Create a new schooling.
+      description: Create a new schooling. User ID is taken from JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SchoolingRequest"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolingResponse"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        412:
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /schooling/listing:
+    get:
+      tags:
+        - Schooling
+      summary: List schoolings by a user's ID
+      description: List all user's schoolings. User ID is retrieved from JWT token.
+      parameters:
+        - in: path
+          name: page
+          schema:
+            type: integer
+            default: 0
+            description: Parameter for specifing page of schoolings to be retrieved. If not provided, page=0 will be returned. Default size of page is 16 and elements sorted by update time.
+            example: 3
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolingListingResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /schooling/{schoolingId}:
+    get:
+      tags:
+        - Schooling
+      summary: Specific schooling by schooling's id
+      description: Return doctor's schooling by schooling's id. User ID is retrieved from JWT token.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolingResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /schooling/remove/{schoolingId}:
+    delete:
+      tags:
+        - Schooling
+      summary: Removing schooling by its ID
+      description: User can remove schooling by it. User ID is retrieved from JWT token.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RemoveSchooling"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /schooling/edit/{schoolingId}:
+    patch:
+      tags:
+        - Schooling
+      summary: Edit schooling.
+      description: Edit schooling. Schooling id is retrieved from path. User id is retrieved from JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SchoolingRequest"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolingResponse"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        412:
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /news/create:
+    post:
+      tags:
+        - News
+      summary: Create a news.
+      description: Create a news from doctor perpective.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicationRequest"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullPublicationResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+
+  /news/listing:
+    get:
+      tags:
+        - News
+      summary: List news by a user id.
+      description: Getting list of news, where doctor's id is taken from token.
+      parameters:
+        - in: path
+          name: page
+          schema:
+            type: integer
+            default: 0
+            description: Parameter for specifing page of news to be retrieved. If not provided, page=0 will be returned. Default size of page is 16 and elements sorted by update time.
+            example: 3
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullPublicationListingResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+
+  /news/{newsId}:
+    get:
+      tags:
+        - News
+      summary: One specific news by its id.
+      parameters:
+        - in: path
+          name: newsId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: The news ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullPublicationResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+
+  /news/edit/{newsId}:
+    patch:
+      tags:
+        - News
+      summary: Edit a news by its id.
+      description: Edit a news from doctor perpective.
+      parameters:
+        - in: path
+          name: newsId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: The news ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicationRequest"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullPublicationResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+
+  /news/remove/{newsId}:
+    delete:
+      tags:
+        - News
+      summary: Removing news by its ID
+      description: User can remove news by id. User ID is retrieved from JWT token.
+      parameters:
+        - in: path
+          name: newsId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: The news ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RemovePublication"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+  /articles/create:
+    post:
+      tags:
+        - Article
+      summary: Create an article.
+      description: Create an article from doctor perpective.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicationRequest"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullPublicationResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+
+  /articles/listing:
+    get:
+      tags:
+        - Article
+      summary: List articles by a user id.
+      description: Getting list of articles, where doctor's id is taken from token.
+      parameters:
+        - in: path
+          name: page
+          schema:
+            type: integer
+            default: 0
+            description: Parameter for specifing page of articles to be retrieved. If not provided, page=0 will be returned. Default size of page is 16 and elements sorted by update time.
+            example: 3
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullPublicationListingResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+
+  /articles/{articleId}:
+    get:
+      tags:
+        - Article
+      summary: One specific article by its id.
+      parameters:
+        - in: path
+          name: articleId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: The article's ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullPublicationResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+
+  /articles/edit/{articleId}:
+    patch:
+      tags:
+        - Article
+      summary: Edit an article by its id.
+      description: Edit an article from doctor perpective.
+      parameters:
+        - in: path
+          name: articleId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: The article's ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicationRequest"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullPublicationResponse"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+
+  /articles/remove/{articleId}:
+    delete:
+      tags:
+        - Article
+      summary: Removing article by its ID
+      description: User can remove an article by id. User ID is retrieved from JWT token.
+      parameters:
+        - in: path
+          name: articleId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: The article's ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RemovePublication"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+        '500':
+          description: Server Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnsuccessfulResponse"
+components:
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    lang:
+      in: query
+      name: lang
+      schema:
+        type: string
+        enum: [ et, en, ru ]
+        example: et
+      required: true
+      description: Publication language
+    articleId:
+      in: path
+      name: articleId
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: The article's ID
+    newsId:
+      in: path
+      name: newsId
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: The news ID
+  schemas:
+    SchoolingRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Title of the event
+          example: Title
+        description:
+          type: string
+          description: Description of the event
+          example: Description
+        address:
+          type: string
+          description: Address where schooling takes place.
+          example: Lorem
+        city:
+          type: string
+          description: City where schooling takes place.
+          example: Ipsum
+        category:
+          type: string
+          description: Category of schooling.
+          example: Lorem ipsum
+        eventDateTime:
+          type: date-time
+          description: Date time of the event in the format yyyy-mm-ddThh:mm:ss
+          example: 2007-12-03T10:15:30
+        registrationDeadline:
+          type: date-time
+          description: Schooling event deadline in format of yyyy-mm-ddThh:mm:ss
+          example: 2015-12-03T10:15:35
+        free:
+          type: boolean
+          description: Is event free or not
+          example: false
+        price:
+          type: double
+          description: Participation price for the event
+          example: 20.0
+        published:
+          type: boolean
+          description: Whether the schooling is published or not.
+          example: false
+    PasswordChangeRequest:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+          example: fingersFingers
+          description: Old user's password.
+        newPassword:
+          type: string
+          minLength: 8
+          example: loremIpsum
+          description: New user's password.
+      required:
+        - oldPassword
+        - newPassword
+    ForgottenPasswordChangeRequest:
+      type: object
+      properties:
+        newPassword:
+          type: string
+          description: User's new password
+          example: lorem ipsum
+      required:
+        - newPassword
+    PasswordResetRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          example: john.doe@gmail.com
+          description: User's email.
+      required:
+        - email
+    UserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: Person's firstname
+          example: Vasja
+        lastName:
+          type: string
+          description: User's lastname
+          example: Pupkin
+    SignupResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            email:
+              type: string
+              description: Person's email which is email
+              example: testing@ut.ee
+            status:
+              type: string
+              description: User's status
+              example: pending
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    LoginResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            token:
+              description: Generated JWT
+              type: string
+              example: string
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    UserUpdateResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            email:
+              description: Person's email which is email
+              type: string
+              example: testing@ut.ee
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    UserListingResponse:
+      type: object
+      properties:
+        data:
+          properties:
+            totalItems:
+              type: integer
+              example: 1
+              description: Total items returned.
+            users:
+              type: array
+              items:
+                $ref: "#/components/schemas/UserData"
+            totalPages:
+              type: integer
+              example: 1
+              description: Total pages.
+            currentPage:
+              type: integer
+              example: 0
+              description: Currently selected page.
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    UserData:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Person's email which is email
+          example: pulmonis@eesti.ee
+        status:
+          type: string
+          description: User's status.
+          example: pending
+    SchoolingResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/SchoolingData"
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    SchoolingListingResponse:
+      type: object
+      properties:
+        data:
+          properties:
+            totalItems:
+              type: integer
+              example: 1
+              description: Total items returned.
+            schoolings:
+              type: array
+              items:
+                $ref: "#/components/schemas/SchoolingData"
+            totalPages:
+              type: integer
+              example: 1
+              description: Total pages.
+            currentPage:
+              type: integer
+              example: 0
+              description: Currently selected page.
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    RemoveSchooling:
+      type: object
+      properties:
+        data:
+          properties:
+            schoolingId:
+              type: integer
+              format: int64
+              description: Schooling ID.
+              example: 7
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    SchoolingData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Schooling ID.
+          example: 7
+        title:
+          type: string
+          description: Title of schooling.
+          example: Ipsum Lorem
+        description:
+          type: string
+          description: Description of schooling.
+          example: Lorem ipsum
+        address:
+          type: string
+          description: Address where schooling takes place.
+          example: Lorem
+        city:
+          type: string
+          description: City where schooling takes place.
+          example: Ipsum
+        category:
+          type: string
+          description: Category of schooling.
+          example: Lorem ipsum
+        eventDateTime:
+          type: date-time
+          description: Schooling event date time in format of yyyy-mm-ddThh:mm:ss
+          example: 2015-12-03T10:15:35
+        free:
+          type: boolean
+          description: Whether the schooling is free of charge or not.
+          example: false
+        price:
+          type: double
+          description: The price of schooling if schooling not free of charge. Otherwise price defaults to 0.0.
+          example: 420.69
+        registrationDeadline:
+          type: date-time
+          description: Schooling event deadline in format of yyyy-mm-ddThh:mm:ss
+          example: 2015-12-03T10:15:35
+        published:
+          type: boolean
+          description: Whether the schooling is published or not.
+          example: true
+    PublicationRequest:
+      type: object
+      properties:
+        titleEn:
+          type: string
+          nullable: true
+          example: Test title
+          description: Publication title in English
+        titleEt:
+          type: string
+          nullable: true
+          example: null
+          description: Publication title in Estonian
+        titleRu:
+          type: string
+          nullable: true
+          example: null
+          description: Publication title in Russian
+        descriptionEn:
+          type: string
+          nullable: true
+          example: Test description
+          description: Publication description in English
+        descriptionEt:
+          type: string
+          nullable: true
+          example: null
+          description: Publication description in Estonian
+        descriptionRu:
+          type: string
+          nullable: true
+          example: null
+          description: Publication description in Russian
+        bodyEn:
+          type: string
+          nullable: true
+          example: Test body
+          description: Publication body in English
+        bodyEt:
+          type: string
+          nullable: true
+          example: null
+          description: Publication body in Estonian
+        bodyRu:
+          type: string
+          nullable: true
+          example: null
+          description: Publication body in Russian
+        publishedEt:
+          type: boolean
+          example: true
+          description: Is the publication published in Estonian
+        publishedEn:
+          type: boolean
+          example: false
+          description: Is the publication published in English
+        publishedRu:
+          type: boolean
+          example: false
+          description: Is the publication published in Russian
+        category:
+          type: string
+          example: TestCategory
+          description: Category of the publication
+    FullPublicationResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/FullPublicationData"
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    PublicationResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PublicationData"
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    FullPublicationListingResponse:
+      type: object
+      properties:
+        data:
+          properties:
+            totalItems:
+              type: integer
+              example: 1
+              description: Total items returned.
+            publications:
+              type: array
+              items:
+                $ref: "#/components/schemas/FullPublicationData"
+            totalPages:
+              type: integer
+              example: 1
+              description: Total pages.
+            currentPage:
+              type: integer
+              example: 0
+              description: Currently selected page.
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    PublicationListingResponse:
+      type: object
+      properties:
+        data:
+          properties:
+            totalItems:
+              type: integer
+              example: 1
+              description: Total items returned.
+            publications:
+              type: array
+              items:
+                $ref: "#/components/schemas/PublicationData"
+            totalPages:
+              type: integer
+              example: 1
+              description: Total pages.
+            currentPage:
+              type: integer
+              example: 0
+              description: Currently selected page.
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    RemovePublication:
+      type: object
+      properties:
+        data:
+          type: integer
+          format: int64
+          description: Publication ID.
+          example: 7
+        errors:
+          $ref: "#/components/schemas/EmptyError"
+        status:
+          $ref: "#/components/schemas/SuccessfulStatus"
+    FullPublicationData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Publication ID
+          example: 7
+        titleEn:
+          type: string
+          nullable: true
+          example: Test title
+          description: Publication title in English
+        titleEt:
+          type: string
+          nullable: true
+          example: null
+          description: Publication title in Estonian
+        titleRu:
+          type: string
+          nullable: true
+          example: null
+          description: Publication title in Russian
+        descriptionEn:
+          type: string
+          nullable: true
+          example: Test description
+          description: Publication description in English
+        descriptionEt:
+          type: string
+          nullable: true
+          example: null
+          description: Publication description in Estonian
+        descriptionRu:
+          type: string
+          nullable: true
+          example: null
+          description: Publication description in Russian
+        bodyEn:
+          type: string
+          nullable: true
+          example: Test body
+          description: Publication body in English
+        bodyEt:
+          type: string
+          nullable: true
+          example: null
+          description: Publication body in Estonian
+        bodyRu:
+          type: string
+          nullable: true
+          example: null
+          description: Publication body in Russian
+        publishedEt:
+          type: boolean
+          example: true
+          description: Is the publication published in Estonian
+        publishedEn:
+          type: boolean
+          example: false
+          description: Is the publication published in English
+        publishedRu:
+          type: boolean
+          example: false
+          description: Is the publication published in Russian
+        category:
+          type: string
+          example: TestCategory
+          description: Category of the publication
+        publishTime:
+          type: date-time
+          description: Last publication time in format of yyyy-mm-ddThh:mm:ss
+          example: 2015-12-03T10:15:35
+    PublicationData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Publication ID
+          example: 7
+        title:
+          type: string
+          nullable: true
+          example: Test title
+          description: Publication title
+        description:
+          type: string
+          nullable: true
+          example: Test description
+          description: Publication description
+        body:
+          type: string
+          nullable: true
+          example: Test body
+          description: Publication body
+        published:
+          type: boolean
+          example: true
+          description: Is the publication published in parameter specified language
+        category:
+          type: string
+          example: TestCategory
+          description: Category of the publication
+        publishTime:
+          type: date-time
+          description: Last publication time in format of yyyy-mm-ddThh:mm:ss
+          example: 2015-12-03T10:15:35
+    dataOk:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            ok:
+              type: boolean
+              description: Successful response.
+              example: true
+        errors:
+          type: array
+          nullable: true
+          description: List of errors returned by API.
+          example: null
+        status:
+          type: integer
+          description: Successful response from API.
+          example: 200
+    isValidToken:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            isValid:
+              type: boolean
+              description: Whether password reset token is valid or not.
+              example: true
+        errors:
+          type: array
+          nullable: true
+          description: List of errors returned by API.
+          example: null
+        status:
+          type: integer
+          description: Successful response from API.
+          example: 200
+    EmptyError:
+      type: array
+      nullable: true
+      description: List of errors returned by API.
+      example: null
+    SuccessfulStatus:
+      type: integer
+      example: 200
+      default: 200
+      description: Successful response from API.
+    UnsuccessfulStatus:
+      type: integer
+      example: 400
+      description: Successful status response from API. Can vary from 400 to 500.
+    UnsuccessfulResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          nullable: true
+          example: null
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApiError"
+        status:
+          $ref: "#/components/schemas/UnsuccessfulStatus"
+    ApiError:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message returned from API.
+          nullable: true
+          example: "string"
+        code:
+          type: string
+          description: Error code returned from API.
+          example: "string"
+security:
+  - bearerAuth: [ ]

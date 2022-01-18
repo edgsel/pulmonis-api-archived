@@ -1,0 +1,3 @@
+ALTER TABLE "news"
+
+DROP COLUMN IF EXISTS published;
